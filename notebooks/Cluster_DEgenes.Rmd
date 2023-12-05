@@ -1,0 +1,53 @@
+---
+title: "Cluster DE genes R Notebook"
+output:
+  html_document:
+    df_print: paged
+  github_document: default
+---
+
+```{r libraries, results='hide', message=FALSE, warning=FALSE, error=FALSE}
+library(Seurat)
+library(ggplot2)
+library(dplyr)
+library(ggsci)
+library(openxlsx)
+options(future.globals.maxSize = 4000 * 1024^2)
+```
+
+# read data
+```{r readdata}
+seurat <- readRDS(file = "RDSfiles/hand2.bud.clustered.RDS")
+Idents(seurat) <- "sub.cluster"
+DimPlot(seurat) + scale_color_igv()
+```
+
+```{r getlevels}
+levels(seurat)
+```
+```{r fixlevels}
+abbreviate(gsub(" ",".",gsub("_",".",levels(seurat))), minlength = 20)
+```
+
+# find all DE genes
+```{r markers}
+markers <- FindAllMarkers(seurat, only.pos = T, verbose = F)
+head(markers)
+```
+
+```{r degenelist}
+if (!dir.exists("results")){
+  dir.create("results")
+}
+DEgenelist <- list()
+for(cluster in levels(seurat)){
+  clustername <- abbreviate(gsub(" ",".",gsub("_",".",cluster)), minlength = 20)
+  DEgenelist[[clustername]] <- markers[markers$cluster == cluster,]
+}
+write.xlsx(DEgenelist, file = "results/hand2_bud_cluster_DEgenes.xlsx")
+```
+
+```{r sessioninfo}
+sessionInfo()
+```
+
