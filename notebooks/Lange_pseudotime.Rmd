@@ -1,0 +1,216 @@
+---
+title: "Lange scRNA-seq pseudotime R Notebook"
+output:
+  github_document: default
+  html_document:
+    df_print: paged
+---
+
+
+
+# libraries
+```{r}
+suppressPackageStartupMessages({
+  library(reticulate)
+  library(Seurat)
+  library(dplyr)
+  library(ggplot2)
+  library(ggsci)
+  library(patchwork)
+  library(SeuratDisk)
+  library(slingshot)
+  library(tradeSeq)
+  })
+#library(reticulate)
+#use_python(python = "/Users/becky/opt/miniconda3/bin/python3", required = TRUE)
+options(future.globals.maxSize = 6000 * 1024^2)
+```
+
+# read data
+zebrafish single cell RNA-seq data downloaded from: https://zebrahub.ds.czbiohub.org/data
+```{r}
+Lange <- LoadH5Seurat(file = "~/Documents/Projects/Mosimann/Hannah_scRNAseq/data/zf_atlas_full_v4_release.h5seurat", assays = "RNA")
+Idents(Lange) <- "zebrafish_anatomy_ontology_class"
+DimPlot(Lange, raster = FALSE)
+```
+integrated scRNA-seq of Lange 16hpf, Lange 24hpf and our scRNA-seq
+```{r}
+cardio <- readRDS(file = "~/Documents/Projects/Mosimann/Hannah_scRNAseq_Integration_SeuratV5/integrate_and_subset/CardioSubset_v3_Integrated_hand2Bud_Lange16hpf_Lange24hpf.RDS")
+```
+
+```{r}
+DimPlot(cardio, reduction = "umap.mnn", group.by = "sub.cluster")
+```
+
+# name cardio clusters
+```{r}
+Idents(cardio) <- "sub.cluster"
+cardio <- RenameIdents(cardio,
+                       "0" = "pericardium",
+                       "1" = "pectoral fin",
+                       "2" = "floor plate",
+                       "3" = "cardiac precursor",
+                       "4" = "pharyngeal arch 1",
+                       "5" = "pharyngeal arch 2",
+                       "6" = "prophenos",
+                       "7_0" = "lowExpCells 1",
+                       "7_1" = "lowExpCells 2",
+                       "7_2" = "lowExpCells 3",
+                       "8" = "cardiomyocytes",
+                       "9" = "highRiboCells")
+cardio$named_mnn_clusters <- Idents(cardio)
+DimPlot(cardio, reduction = "umap.mnn", group.by = "named_mnn_clusters")
+```
+
+# find pericardium cells in Lange dataset
+```{r}
+tail(WhichCells(cardio))
+gsub("Lange_24hpf_","",tail(WhichCells(cardio)))
+```
+
+```{r}
+Idents(cardio) <- "named_mnn_clusters"
+peri_cells <- gsub("Lange_16hpf_","",(gsub("Lange_24hpf_","",WhichCells(cardio, idents = "pericardium"))))
+length(peri_cells)
+```
+
+```{r}
+tail(peri_cells)
+head(WhichCells(Lange))
+```
+
+```{r, fig.width=10, fig.height=5}
+p1 <- DimPlot(Lange, cells.highlight = peri_cells, raster=FALSE) + NoLegend() 
+p2 <- DimPlot(Lange, group.by = "zebrafish_anatomy_ontology_class", raster=FALSE)
+p <- p1 + p2
+p
+ggsave(filename = "results/Lange_full_UMAP.png", plot = p, width = 10, height = 5)
+```
+
+```{r}
+Idents(Lange) <- "zebrafish_anatomy_ontology_class"
+lat_meso <- subset(Lange, idents = "lateral_mesoderm")
+```
+
+```{r, fig.width=10, fig.height=5}
+lat_meso <- FindVariableFeatures(lat_meso, verbose = F)
+lat_meso <- ScaleData(lat_meso, verbose = F)
+lat_meso <- RunPCA(lat_meso, verbose = F)
+lat_meso <- FindNeighbors(lat_meso, dims = 1:20, verbose = F)
+lat_meso <- RunUMAP(lat_meso, dims = 1:20, verbose = F)
+lat_meso <- FindClusters(lat_meso, resolution = 1, verbose = F)
+DimPlot(lat_meso, group.by = c("timepoint","RNA_snn_res.1"))
+```
+
+# cluster IDs of lateral mesoderm subset
+
+Note cardio scRNA-seq contains only Lange 16hpf and Lange 24hpf along with our bud stage data, so only 16hpf and 24hpf Lange cells will be highlighted.
+```{r}
+pecfin_cells <- gsub("Lange_16hpf_","",(gsub("Lange_24hpf_","",WhichCells(cardio, idents = "pectoral fin"))))
+FP_cells <- gsub("Lange_16hpf_","",(gsub("Lange_24hpf_","",WhichCells(cardio, idents = "floor plate"))))
+parch1_cells <- gsub("Lange_16hpf_","",(gsub("Lange_24hpf_","",WhichCells(cardio, idents = "pharyngeal arch 1"))))
+parch2_cells <- gsub("Lange_16hpf_","",(gsub("Lange_24hpf_","",WhichCells(cardio, idents = "pharyngeal arch 2"))))
+cardio_cells <- gsub("Lange_16hpf_","",(gsub("Lange_24hpf_","",WhichCells(cardio, idents = "cardiomyocytes"))))
+```
+
+```{r, fig.width=10, fig.height=10}
+p1 <- DimPlot(lat_meso, reduction = "umap", cells.highlight = peri_cells) + NoLegend() + ggtitle("pericardium")
+p2 <- DimPlot(lat_meso, reduction = "umap", cells.highlight = pecfin_cells) + NoLegend() + ggtitle("pectoral fin")
+p3 <- DimPlot(lat_meso, reduction = "umap", cells.highlight = FP_cells) + NoLegend() + ggtitle("floor plate")
+p4 <- DimPlot(lat_meso, reduction = "umap", cells.highlight = parch1_cells) + NoLegend() + ggtitle("pharyngeal arch 1")
+p5 <- DimPlot(lat_meso, reduction = "umap", cells.highlight = parch2_cells) + NoLegend() + ggtitle("pharyngeal arch 2")
+p6 <- DimPlot(lat_meso, reduction = "umap", cells.highlight = cardio_cells) + NoLegend() + ggtitle("cardiomyocytes")
+p7 <- DimPlot(lat_meso, group.by = "RNA_snn_res.1", label = T, repel = T) + NoLegend()
+p8 <- DimPlot(lat_meso, group.by = "timepoint")
+p1 + p2 + p3 + p4 + p5 + p6 + p7 + p8
+```
+
+# subset cardiomyocytes, pericardium and precursor clusters
+
+```{r}
+p1 <- DimPlot(lat_meso, group.by = "RNA_snn_res.1", label = T) + scale_color_igv()
+p2 <- DimPlot(lat_meso, group.by = "RNA_snn_res.1", reduction = 'pca') + scale_color_igv() + NoLegend()
+p1 + p2
+```
+
+select: 
+
+* 17 – early timepoint cells (10/12hpf) 
+* 8 – early timepoint cells (12/14hpf) 
+* 15 – pericardium (16/19hpf) 
+* 5 – pericardium (24hpf) 
+* 19 – cardiomyocytes (16/19/24hpf)
+
+leaving out: 
+
+* 21, 23 – pectoral fin cells 
+* 31 – late timepoint cardiomyocytes because don’t have pericarium late timepoint cells
+
+```{r, fig.width=10, fig.height=5}
+Idents(lat_meso) <- "RNA_snn_res.1"
+lat_meso2 <- subset(lat_meso, idents = c("17","8","15","5","19"))
+lat_meso2 <- RenameIdents(lat_meso2,
+                          "17" = "10/12hpf cells",
+                          "8" = "12/14hpf cells",
+                          "15" = "16/19hpf pericardium",
+                          "5" = "24hpf pericardium",
+                          "19" = "16/19/24hpf cardiomyocytes")
+lat_meso2$subset_clusters <- Idents(lat_meso2)
+
+```
+
+```{r, fig.width=13, fig.height=10}
+p1 <- DimPlot(lat_meso, reduction = "umap", cells.highlight = peri_cells) + NoLegend() + ggtitle("pericardium")
+p2 <- DimPlot(lat_meso, reduction = "umap", cells.highlight = pecfin_cells) + NoLegend() + ggtitle("pectoral fin")
+p3 <- DimPlot(lat_meso, reduction = "umap", cells.highlight = FP_cells) + NoLegend() + ggtitle("floor plate")
+p4 <- DimPlot(lat_meso, reduction = "umap", cells.highlight = parch1_cells) + NoLegend() + ggtitle("pharyngeal arch 1")
+p5 <- DimPlot(lat_meso, reduction = "umap", cells.highlight = parch2_cells) + NoLegend() + ggtitle("pharyngeal arch 2")
+p6 <- DimPlot(lat_meso, reduction = "umap", cells.highlight = cardio_cells) + NoLegend() + ggtitle("cardiomyocytes")
+p7 <- DimPlot(lat_meso, group.by = "RNA_snn_res.1", label = T, repel = T) + NoLegend()
+p8 <- DimPlot(lat_meso, group.by = "timepoint")
+p9 <- DimPlot(lat_meso2, group.by = "subset_clusters")
+p <- p1 + p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9
+p
+ggsave(filename = "results/Lange_lat_meso_subset_UMAP.png", plot = p, width = 13, height = 10)
+```
+
+```{r, fig.width=10, fig.height=5}
+p <- DimPlot(lat_meso2, reduction = "pca", group.by = c("timepoint","subset_clusters")) + scale_color_igv()
+p
+ggsave(filename = "results/Lange_pericardium_subset_pca.png", plot = p, width = 10, height = 5)
+```
+
+# slingshot
+
+```{r}
+Idents(lat_meso2) <- "subset_clusters"
+sce <- as.SingleCellExperiment(lat_meso2, assay = 'RNA')
+saveRDS(sce, file = "RDSfiles/Lange_lat_meso2_subset_res1_noPecFin.sce.RDS")
+```
+
+```{r}
+crv <- slingshot(sce, reducedDim = 'PCA', 
+                 clusterLabels = colData(sce)$subset_clusters,
+                 start.clus = '10/12hpf cells')
+```
+
+```{r}
+crv@colData@listData[["slingshot"]]@metadata[["lineages"]][["Lineage1"]]
+```
+
+```{r}
+crv@colData@listData[["slingshot"]]@metadata[["lineages"]][["Lineage2"]]
+```
+
+
+```{r}
+p <- plotGeneCount(crv, clusters = colData(sce)$subset_clusters) + scale_color_igv()
+p
+ggsave(filename = "results/Lange_slingshot.png")
+```
+
+
+```{r}
+sessionInfo()
+```
+

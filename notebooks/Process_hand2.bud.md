@@ -127,11 +127,11 @@ seurat <- RenameIdents(seurat,
                        "8" = "endoderm 2",
                        "9" = "prechordal plate & hatching gland 1",
                        "10" = "epidermal",
-                       "11" = "paraxial mesoderm 1",
+                       "11" = "tailbud",
                        "12" = "cranial mesoderm",
                        "13" = "neural plate",
                        "14" = "prechordal plate & hatching gland 2",
-                       "15" = "paraxial mesoderm 2",
+                       "15" = "paraxial mesoderm",
                        "16" = "notochord")
 seurat$Clusters <- Idents(seurat)
 DimPlot(seurat, label = T, label.size = 3) + NoLegend() + scale_color_igv()

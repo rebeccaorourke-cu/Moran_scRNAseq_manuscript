@@ -1,9 +1,9 @@
 ---
 title: "Cluster DE genes R Notebook"
 output:
+  github_document: default
   html_document:
     df_print: paged
-  github_document: default
 ---
 
 ```{r libraries, results='hide', message=FALSE, warning=FALSE, error=FALSE}
@@ -19,7 +19,9 @@ options(future.globals.maxSize = 4000 * 1024^2)
 ```{r readdata}
 seurat <- readRDS(file = "RDSfiles/hand2.bud.clustered.RDS")
 Idents(seurat) <- "sub.cluster"
-DimPlot(seurat) + scale_color_igv()
+p <- DimPlot(seurat) + scale_color_igv()
+p
+ggsave(filename = "results/hand2_bud_umap.png")
 ```
 
 ```{r getlevels}

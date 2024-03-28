@@ -1,0 +1,108 @@
+---
+title: "hox genes plots R Notebook"
+output:
+  github_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r libraries, results='hide', message=FALSE, warning=FALSE, error=FALSE}
+library(Seurat)
+library(ggplot2)
+library(dplyr)
+library(ggsci)
+library(openxlsx)
+library(scCustomize)
+options(future.globals.maxSize = 4000 * 1024^2)
+```
+
+# read data
+```{r readdata}
+seurat <- readRDS(file = "RDSfiles/hand2.bud.clustered.RDS")
+Idents(seurat) <- "sub.cluster"
+p <- DimPlot(seurat) + scale_color_igv()
+p
+```
+
+```{r}
+levels(seurat) <- c("endothalial and hematopoietic precursors",
+                    "cranial mesoderm","ribosomal","cardiomyocytes","pericardium",
+                    "mesothelium","posterior lateral plate mesoderm",
+                    "posterior hemangioblasts & kidney","paraxial mesoderm",
+                    "tailbud","pan-neuronal","neural plate","epidermal","endoderm 1",
+                    "endoderm 2","notochord","prechordal plate & hatching gland 1",
+                    "prechordal plate & hatching gland 2")
+```
+
+# hox genes plots
+```{r}
+hoxgenes <- c("hoxa10b","hoxa11a","hoxa11b","hoxa13a","hoxa13b","hoxa1a","hoxa2b","hoxa3a",
+              "hoxa4a","hoxa5a","hoxa9a","hoxa9b","hoxb10a","hoxb13a","hoxb1a","hoxb1b",
+              "hoxb2a","hoxb3a","hoxb4a","hoxb5a","hoxb5b","hoxb6a","hoxb6b","hoxb7a",
+              "hoxb8a","hoxb8b","hoxb9a","hoxc10a","hoxc11a","hoxc11b","hoxc12a","hoxc12b",
+              "hoxc13a","hoxc13b","hoxc1a","hoxc3a","hoxc4a","hoxc5a","hoxc6a","hoxc6b",
+              "hoxc8a","hoxc9a","hoxd10a","hoxd11a","hoxd12a","hoxd13a","hoxd3a","hoxd4a",
+              "hoxd9a")
+```
+
+```{r, fig.width=15, fig.height=5}
+pdot <- DotPlot(seurat, features = hoxgenes) + RotatedAxis()
+pdot
+ggsave(filename = "results/hox_dotplot_vs1.png", plot = pdot, width = 15, height = 5)
+```
+
+```{r}
+hoxgenes2 <- c("hoxb8a","hoxa11b","hoxa9a","hoxb3a","hoxb6b","hoxb5b","hoxa10b","hoxd3a",
+              "hoxa3a","hoxa13b","hoxc3a","hoxb7a","hoxb10a","hoxd10a","hoxd9a","hoxb9a",
+              "hoxa9b","hoxc1a","hoxb1b","hoxb2a","hoxb1a")
+```
+
+```{r, fig.width=10, fig.height=5}
+pdot2 <- DotPlot(seurat, features = hoxgenes2) + RotatedAxis()
+pdot2
+ggsave(filename = "results/hox_dotplot_vs2.png", plot = pdot2, width = 10, height = 5)
+```
+
+```{r}
+hoxgenes3 <- c("hoxd11a","hoxd12a","hoxa11a","hoxc10a","hoxa10b","hoxa11b","hoxa13b",
+               "hoxa2b","hoxb8b","hoxd3a","hoxd4a",
+              "hoxa9a","hoxd10a","hoxa9b","hoxb10a","hoxb5b","hoxb6b","hoxb7a",
+              "hoxb8a","hoxb9a","hoxc4a","hoxc6a","hoxc6b",
+              "hoxc8a","hoxc9a",
+              "hoxd9a","hoxb6a","hoxa3a","hoxb5a","hoxb1a","hoxb2a","hoxc3a","hoxc1a","hoxb1b","hoxb3a")
+```
+
+```{r, fig.width=12, fig.height=5}
+pdot3 <- DotPlot(seurat, features = hoxgenes3) + RotatedAxis()
+pdot3
+ggsave(filename = "results/hox_dotplot_vs3.png", plot = pdot3, width = 12, height = 5)
+```
+
+```{r, fig.width=15, fig.height=15}
+fix.sc <- scale_color_gradientn(colors = c('lightgrey','darkblue'), limits = c(0,3))
+
+fplot <- FeaturePlot(seurat, features = hoxgenes, combine = F, label.size = 3)
+fplota <- patchwork::wrap_plots(lapply(fplot, function (x) x + fix.sc + NoAxes()), guides = "collect")
+fplota
+ggsave(filename = "results/hox_gene_feature_vs1.png", plot = fplota, width = 15, height = 15)
+```
+
+```{r, fig.width=10, fig.height=10}
+fplot2 <- FeaturePlot(seurat, features = hoxgenes2, combine = F, label.size = 2)
+fplot2a <- patchwork::wrap_plots(lapply(fplot2, function (x) x + fix.sc + NoAxes()), guides = "collect")
+fplot2a
+ggsave(filename = "results/hox_gene_feature_vs2.png", plot = fplot2a, width = 10, height = 10)
+```
+
+```{r, fig.width=15, fig.height=15}
+fplot3 <- FeaturePlot(seurat, features = hoxgenes3, combine = F, label.size = 2)
+fplot3a <- patchwork::wrap_plots(lapply(fplot3, function (x) x + fix.sc + NoAxes()), guides = "collect")
+fplot3a
+ggsave(filename = "results/hox_gene_feature_vs3.png", plot = fplot3a, width = 15, height = 15)
+```
+
+
+```{r}
+sessionInfo()
+```
+
