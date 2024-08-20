@@ -15,81 +15,74 @@ options(future.globals.maxSize = 4000 * 1024^2)
 ``` r
 seurat <- readRDS(file = "RDSfiles/hand2.bud.clustered.RDS")
 Idents(seurat) <- "sub.cluster"
-p <- DimPlot(seurat) + scale_color_igv()
-p
+DimPlot(seurat) + scale_color_igv()
 ```
 
 ![](Cluster_DEgenes_files/figure-gfm/readdata-1.png)<!-- -->
 
 ``` r
-ggsave(filename = "results/hand2_bud_umap.png")
-```
-
-    ## Saving 7 x 5 in image
-
-``` r
 levels(seurat)
 ```
 
-    ##  [1] "pericardium"                             
-    ##  [2] "mesothelium"                             
-    ##  [3] "posterior lateral plate mesoderm"        
-    ##  [4] "posterior hemangioblasts & kidney"       
-    ##  [5] "endoderm 1"                              
-    ##  [6] "epidermal"                               
-    ##  [7] "cranial mesoderm"                        
-    ##  [8] "pan-neuronal"                            
-    ##  [9] "ribosomal"                               
-    ## [10] "cardiomyocytes"                          
-    ## [11] "prechordal plate & hatching gland 1"     
-    ## [12] "endothalial and hematopoietic precursors"
-    ## [13] "tailbud"                                 
-    ## [14] "notochord"                               
-    ## [15] "prechordal plate & hatching gland 2"     
-    ## [16] "neural plate"                            
-    ## [17] "endoderm 2"                              
-    ## [18] "paraxial mesoderm"
+    ##  [1] "endothelial and hematopoietic precursors"
+    ##  [2] "cranial mesoderm"                        
+    ##  [3] "ribosomal"                               
+    ##  [4] "myocardium"                              
+    ##  [5] "pericardium"                             
+    ##  [6] "mesothelium"                             
+    ##  [7] "PLPM"                                    
+    ##  [8] "posterior hemangioblasts & kidney"       
+    ##  [9] "paraxial mesoderm"                       
+    ## [10] "uncommitted PLPM"                        
+    ## [11] "pan-neuronal"                            
+    ## [12] "neural plate"                            
+    ## [13] "epidermal"                               
+    ## [14] "endoderm 1"                              
+    ## [15] "endoderm 2"                              
+    ## [16] "notochord"                               
+    ## [17] "prechordal plate & hatching gland 1"     
+    ## [18] "prechordal plate & hatching gland 2"
 
 ``` r
 abbreviate(gsub(" ",".",gsub("_",".",levels(seurat))), minlength = 20)
 ```
 
+    ## endothelial.and.hematopoietic.precursors 
+    ##                   "endthll.nd.hmtptc.pr" 
+    ##                         cranial.mesoderm 
+    ##                       "cranial.mesoderm" 
+    ##                                ribosomal 
+    ##                              "ribosomal" 
+    ##                               myocardium 
+    ##                             "myocardium" 
     ##                              pericardium 
     ##                            "pericardium" 
     ##                              mesothelium 
     ##                            "mesothelium" 
-    ##         posterior.lateral.plate.mesoderm 
-    ##                   "pstrr.ltrl.plt.msdrm" 
+    ##                                     PLPM 
+    ##                                   "PLPM" 
     ##        posterior.hemangioblasts.&.kidney 
     ##                   "pstrr.hmngblsts.&.kd" 
-    ##                               endoderm.1 
-    ##                             "endoderm.1" 
-    ##                                epidermal 
-    ##                              "epidermal" 
-    ##                         cranial.mesoderm 
-    ##                       "cranial.mesoderm" 
+    ##                        paraxial.mesoderm 
+    ##                      "paraxial.mesoderm" 
+    ##                         uncommitted.PLPM 
+    ##                       "uncommitted.PLPM" 
     ##                             pan-neuronal 
     ##                           "pan-neuronal" 
-    ##                                ribosomal 
-    ##                              "ribosomal" 
-    ##                           cardiomyocytes 
-    ##                         "cardiomyocytes" 
-    ##      prechordal.plate.&.hatching.gland.1 
-    ##                   "prchrdl.plt.&.htc..1" 
-    ## endothalial.and.hematopoietic.precursors 
-    ##                   "endthll.nd.hmtptc.pr" 
-    ##                                  tailbud 
-    ##                                "tailbud" 
-    ##                                notochord 
-    ##                              "notochord" 
-    ##      prechordal.plate.&.hatching.gland.2 
-    ##                   "prchrdl.plt.&.htc..2" 
     ##                             neural.plate 
     ##                           "neural.plate" 
+    ##                                epidermal 
+    ##                              "epidermal" 
+    ##                               endoderm.1 
+    ##                             "endoderm.1" 
     ##                               endoderm.2 
     ##                             "endoderm.2" 
-    ##                        paraxial.mesoderm 
-    ##                      "paraxial.mesoderm"
+    ##                                notochord 
+    ##                              "notochord" 
+    ##      prechordal.plate.&.hatching.gland.1 
+    ##                   "prchrdl.plt.&.htc..1" 
+    ##      prechordal.plate.&.hatching.gland.2 
+    ##                   "prchrdl.plt.&.htc..2"
 
 # find all DE genes
 
@@ -98,13 +91,20 @@ markers <- FindAllMarkers(seurat, only.pos = T, verbose = F)
 head(markers)
 ```
 
-    ##                 p_val avg_log2FC pct.1 pct.2     p_val_adj     cluster    gene
-    ## jam2b   1.842710e-131  1.1431834 0.730 0.086 6.698621e-127 pericardium   jam2b
-    ## cdh18a  4.131762e-118  0.5230513 0.546 0.045 1.501978e-113 pericardium  cdh18a
-    ## col7a1l 4.486469e-105  0.8085230 0.656 0.085 1.630921e-100 pericardium col7a1l
-    ## wt1a    4.309043e-101  0.5190972 0.472 0.037  1.566423e-96 pericardium    wt1a
-    ## dhrs3a  1.325830e-100  1.1312146 0.785 0.136  4.819656e-96 pericardium  dhrs3a
-    ## nr2f1a   1.760259e-97  0.9097332 0.822 0.155  6.398892e-93 pericardium  nr2f1a
+    ##                          p_val avg_log2FC pct.1 pct.2     p_val_adj
+    ## si:ch73-364h19.1 1.690412e-303   4.854271 0.970 0.084 6.144986e-299
+    ## spi1b            1.212914e-268   6.601440 0.795 0.050 4.409183e-264
+    ## hhex             2.236793e-266   4.651133 0.795 0.046 8.131189e-262
+    ## sox7             2.632554e-256   4.942734 0.951 0.120 9.569859e-252
+    ## tal1             9.000069e-231   4.293394 0.996 0.186 3.271705e-226
+    ## egfl7            2.060682e-222   4.983454 0.750 0.062 7.490990e-218
+    ##                                                   cluster             gene
+    ## si:ch73-364h19.1 endothelial and hematopoietic precursors si:ch73-364h19.1
+    ## spi1b            endothelial and hematopoietic precursors            spi1b
+    ## hhex             endothelial and hematopoietic precursors             hhex
+    ## sox7             endothelial and hematopoietic precursors             sox7
+    ## tal1             endothelial and hematopoietic precursors             tal1
+    ## egfl7            endothelial and hematopoietic precursors            egfl7
 
 ``` r
 if (!dir.exists("results")){
@@ -122,60 +122,64 @@ write.xlsx(DEgenelist, file = "results/hand2_bud_cluster_DEgenes.xlsx")
 sessionInfo()
 ```
 
-    ## R version 4.2.3 (2023-03-15)
-    ## Platform: aarch64-apple-darwin20 (64-bit)
+    ## R version 4.3.0 (2023-04-21)
+    ## Platform: x86_64-apple-darwin20 (64-bit)
     ## Running under: macOS Monterey 12.6.2
     ## 
     ## Matrix products: default
-    ## BLAS:   /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/lib/libRblas.0.dylib
-    ## LAPACK: /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/lib/libRlapack.dylib
+    ## BLAS:   /Library/Frameworks/R.framework/Versions/4.3-x86_64/Resources/lib/libRblas.0.dylib 
+    ## LAPACK: /Library/Frameworks/R.framework/Versions/4.3-x86_64/Resources/lib/libRlapack.dylib;  LAPACK version 3.11.0
     ## 
     ## locale:
     ## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+    ## 
+    ## time zone: America/Denver
+    ## tzcode source: internal
     ## 
     ## attached base packages:
     ## [1] stats     graphics  grDevices utils     datasets  methods   base     
     ## 
     ## other attached packages:
-    ## [1] openxlsx_4.2.5.2   ggsci_3.0.0        dplyr_1.1.2        ggplot2_3.4.2     
-    ## [5] SeuratObject_4.1.3 Seurat_4.3.0.1    
+    ## [1] openxlsx_4.2.5.2   ggsci_3.0.3        dplyr_1.1.4        ggplot2_3.5.0     
+    ## [5] Seurat_5.0.3       SeuratObject_5.0.1 sp_2.1-3          
     ## 
     ## loaded via a namespace (and not attached):
-    ##   [1] Rtsne_0.16             colorspace_2.1-0       deldir_1.0-6          
-    ##   [4] ellipsis_0.3.2         ggridges_0.5.4         rstudioapi_0.14       
-    ##   [7] spatstat.data_3.0-1    farver_2.1.1           leiden_0.4.3          
-    ##  [10] listenv_0.9.0          ggrepel_0.9.3          fansi_1.0.4           
-    ##  [13] codetools_0.2-19       splines_4.2.3          knitr_1.42            
-    ##  [16] polyclip_1.10-4        jsonlite_1.8.4         ica_1.0-3             
-    ##  [19] cluster_2.1.4          png_0.1-8              uwot_0.1.14           
-    ##  [22] shiny_1.7.4            sctransform_0.3.5      spatstat.sparse_3.0-1 
-    ##  [25] compiler_4.2.3         httr_1.4.6             Matrix_1.6-1.1        
-    ##  [28] fastmap_1.1.1          lazyeval_0.2.2         limma_3.54.2          
-    ##  [31] cli_3.6.1              later_1.3.1            htmltools_0.5.5       
-    ##  [34] tools_4.2.3            igraph_1.4.2           gtable_0.3.3          
-    ##  [37] glue_1.6.2             RANN_2.6.1             reshape2_1.4.4        
-    ##  [40] Rcpp_1.0.10            scattermore_1.0        vctrs_0.6.2           
-    ##  [43] spatstat.explore_3.1-0 nlme_3.1-162           progressr_0.13.0      
-    ##  [46] lmtest_0.9-40          spatstat.random_3.1-4  xfun_0.39             
-    ##  [49] stringr_1.5.0          globals_0.16.2         mime_0.12             
-    ##  [52] miniUI_0.1.1.1         lifecycle_1.0.3        irlba_2.3.5.1         
-    ##  [55] goftest_1.2-3          future_1.32.0          MASS_7.3-60           
-    ##  [58] zoo_1.8-12             scales_1.2.1           ragg_1.2.5            
-    ##  [61] promises_1.2.0.1       spatstat.utils_3.0-2   parallel_4.2.3        
-    ##  [64] RColorBrewer_1.1-3     yaml_2.3.7             reticulate_1.28       
-    ##  [67] pbapply_1.7-0          gridExtra_2.3          stringi_1.7.12        
-    ##  [70] highr_0.10             zip_2.3.0              systemfonts_1.0.4     
-    ##  [73] rlang_1.1.1            pkgconfig_2.0.3        matrixStats_0.63.0    
-    ##  [76] evaluate_0.21          lattice_0.21-8         ROCR_1.0-11           
-    ##  [79] purrr_1.0.1            tensor_1.5             labeling_0.4.2        
-    ##  [82] patchwork_1.1.2        htmlwidgets_1.6.2      cowplot_1.1.1         
-    ##  [85] tidyselect_1.2.0       parallelly_1.35.0      RcppAnnoy_0.0.20      
-    ##  [88] plyr_1.8.8             magrittr_2.0.3         R6_2.5.1              
-    ##  [91] generics_0.1.3         pillar_1.9.0           withr_2.5.0           
-    ##  [94] fitdistrplus_1.1-11    survival_3.5-5         abind_1.4-5           
-    ##  [97] sp_1.6-0               tibble_3.2.1           future.apply_1.10.0   
-    ## [100] KernSmooth_2.23-21     utf8_1.2.3             spatstat.geom_3.1-0   
-    ## [103] plotly_4.10.1          rmarkdown_2.21         grid_4.2.3            
-    ## [106] data.table_1.14.8      digest_0.6.31          xtable_1.8-4          
-    ## [109] tidyr_1.3.0            httpuv_1.6.9           textshaping_0.3.6     
-    ## [112] munsell_0.5.0          viridisLite_0.4.2
+    ##   [1] deldir_2.0-4           pbapply_1.7-2          gridExtra_2.3         
+    ##   [4] rlang_1.1.3            magrittr_2.0.3         RcppAnnoy_0.0.22      
+    ##   [7] spatstat.geom_3.2-9    matrixStats_1.3.0      ggridges_0.5.6        
+    ##  [10] compiler_4.3.0         png_0.1-8              vctrs_0.6.5           
+    ##  [13] reshape2_1.4.4         stringr_1.5.1          pkgconfig_2.0.3       
+    ##  [16] fastmap_1.2.0          labeling_0.4.3         utf8_1.2.4            
+    ##  [19] promises_1.3.0         rmarkdown_2.26         purrr_1.0.2           
+    ##  [22] xfun_0.43              jsonlite_1.8.8         goftest_1.2-3         
+    ##  [25] highr_0.10             later_1.3.2            spatstat.utils_3.0-4  
+    ##  [28] irlba_2.3.5.1          parallel_4.3.0         cluster_2.1.6         
+    ##  [31] R6_2.5.1               ica_1.0-3              stringi_1.8.3         
+    ##  [34] RColorBrewer_1.1-3     spatstat.data_3.0-4    limma_3.58.1          
+    ##  [37] reticulate_1.35.0      parallelly_1.37.1      lmtest_0.9-40         
+    ##  [40] scattermore_1.2        Rcpp_1.0.12            knitr_1.45            
+    ##  [43] tensor_1.5             future.apply_1.11.2    zoo_1.8-12            
+    ##  [46] sctransform_0.4.1      httpuv_1.6.15          Matrix_1.6-5          
+    ##  [49] splines_4.3.0          igraph_2.0.3           tidyselect_1.2.1      
+    ##  [52] abind_1.4-5            rstudioapi_0.16.0      yaml_2.3.8            
+    ##  [55] spatstat.random_3.2-3  codetools_0.2-20       miniUI_0.1.1.1        
+    ##  [58] spatstat.explore_3.2-7 listenv_0.9.1          lattice_0.22-6        
+    ##  [61] tibble_3.2.1           plyr_1.8.9             withr_3.0.0           
+    ##  [64] shiny_1.8.1.1          ROCR_1.0-11            evaluate_0.24.0       
+    ##  [67] Rtsne_0.17             future_1.33.2          fastDummies_1.7.3     
+    ##  [70] survival_3.5-8         polyclip_1.10-6        zip_2.3.1             
+    ##  [73] fitdistrplus_1.1-11    pillar_1.9.0           KernSmooth_2.23-24    
+    ##  [76] plotly_4.10.4          generics_0.1.3         RcppHNSW_0.6.0        
+    ##  [79] munsell_0.5.1          scales_1.3.0           globals_0.16.3        
+    ##  [82] xtable_1.8-4           glue_1.7.0             lazyeval_0.2.2        
+    ##  [85] tools_4.3.0            data.table_1.15.4      RSpectra_0.16-1       
+    ##  [88] RANN_2.6.1             leiden_0.4.3.1         dotCall64_1.1-1       
+    ##  [91] cowplot_1.1.3          grid_4.3.0             tidyr_1.3.1           
+    ##  [94] colorspace_2.1-0       nlme_3.1-165           patchwork_1.2.0       
+    ##  [97] presto_1.0.0           cli_3.6.3              spatstat.sparse_3.0-3 
+    ## [100] spam_2.10-0            fansi_1.0.6            viridisLite_0.4.2     
+    ## [103] uwot_0.1.16            gtable_0.3.4           digest_0.6.36         
+    ## [106] progressr_0.14.0       ggrepel_0.9.5          farver_2.1.2          
+    ## [109] htmlwidgets_1.6.4      htmltools_0.5.8.1      lifecycle_1.0.4       
+    ## [112] httr_1.4.7             statmod_1.5.0          mime_0.12             
+    ## [115] MASS_7.3-60.0.1

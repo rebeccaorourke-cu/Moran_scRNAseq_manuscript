@@ -36,27 +36,24 @@ DimPlot(seurat, cols = cbpal18)
 Idents(seurat) <- "sub.cluster"
 seurat <- RenameIdents(seurat,
                        "cardiomyocytes" = "myocardium",
-                       "paraxial mesoderm 1" = "tailbud",
-                       "paraxial mesoderm 2" = "paraxial mesoderm")
-levels(seurat) <- c("endothalial and hematopoietic precursors","cranial mesoderm",
-                    "ribosomal","myocardium","pericardium","mesothelium","posterior lateral plate mesoderm",
-                    "posterior hemangioblasts & kidney","paraxial mesoderm","tailbud",
+                       "paraxial mesoderm 1" = "uncommitted PLPM",
+                       "paraxial mesoderm 2" = "paraxial mesoderm",
+                       "endothalial and hematopoietic precursors" = "endothelial and hematopoietic precursors",
+                       "posterior lateral plate mesoderm" = "PLPM")
+levels(seurat) <- c("endothelial and hematopoietic precursors","cranial mesoderm",
+                    "ribosomal","myocardium","pericardium","mesothelium","PLPM",
+                    "posterior hemangioblasts & kidney","paraxial mesoderm","uncommitted PLPM",
                     "pan-neuronal","neural plate","epidermal","endoderm 1","endoderm 2",
                     "notochord","prechordal plate & hatching gland 1","prechordal plate & hatching gland 2")
 ```
 
 
-```{r}
+```{r, fig.width=7, fig.height=5}
 p <- DimPlot(seurat, cols = cbpal18)
 p
-ggsave(filename = "results/hand2_bud_umap_vs2.png", plot = p)
+ggsave(filename = "results/hand2_bud_umap_vs2.png", plot = p, width = 7, height = 5, units = "in")
 ```
 
-```{r}
-p <- DimPlot(seurat) + scale_color_igv()
-p
-ggsave(filename = "results/hand2_bud_umap_vs3.png", plot = p)
-```
 ```{r}
 genelist <- c("tcf21", "sema3aa", "wt1a", "meis3", "adra1d", "kank1a",
               "jam2b", "sfrp5", "tmem88b", "nr2f1a", "meis2b", "twist1a",
@@ -67,5 +64,20 @@ genelist <- c("tcf21", "sema3aa", "wt1a", "meis3", "adra1d", "kank1a",
 p <- DotPlot(seurat, features = genelist, idents = c("pericardium","myocardium","mesothelium")) + RotatedAxis()
 p
 ggsave(filename = "results/dotplot.png", plot = p, width = 7, height = 3, units = "in")
+```
+
+saving cluster name changes -- this means notebook can't be run again without first rerunning Process_hand2.bud.Rmd
+```{r}
+seurat$sub.cluster <- Idents(seurat)
+Idents(seurat) <- "sub.cluster"
+levels(seurat)
+```
+```{r}
+saveRDS(seurat, file = "RDSfiles/hand2.bud.clustered.RDS")
+```
+
+
+```{r}
+sessionInfo()
 ```
 
