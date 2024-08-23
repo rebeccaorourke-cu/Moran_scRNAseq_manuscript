@@ -26,13 +26,6 @@ suppressPackageStartupMessages({
 options(future.globals.maxSize = 6000 * 1024^2)
 ```
 
-```{r mypal}
-mypal <- pal_ucscgb(palette = "default",alpha = 1)(25)
-cbpal18 <- c("#68023F","#008169","#EF0096","#00DCB5","#FFCFE2",
-           "#003C86","#9400E6","#009FFA","#FF71FD","#7CFFFA",
-           "#6A0213","#008607","#F60239","#00E307","#FFDC3D","#ffea8a","#001310","#ffe9f1")
-```
-
 # read data
 zebrafish single cell RNA-seq data downloaded from: https://zebrahub.ds.czbiohub.org/data
 ```{r}
@@ -86,12 +79,12 @@ tail(peri_cells)
 head(WhichCells(Lange))
 ```
 
-```{r, fig.width=10, fig.height=5}
-p1 <- DimPlot(Lange, cells.highlight = peri_cells, raster=FALSE) + NoLegend() 
-p2 <- DimPlot(Lange, group.by = "zebrafish_anatomy_ontology_class", raster=FALSE)
-p <- p1 + p2
-p
-ggsave(filename = "results/Lange_full_UMAP.png", plot = p, width = 10, height = 5)
+```{r, fig.width=5, fig.height=5}
+p.umap.full <- DimPlot(Lange, group.by = "zebrafish_anatomy_ontology_class", raster=FALSE)
+p.peri.full <- DimPlot(Lange, cells.highlight = peri_cells, raster=FALSE) + NoLegend() + ggtitle("pericardium cells")
+p.umap.full
+p.peri.full
+#ggsave(filename = "results/Lange_full_UMAP.png", plot = p, width = 10, height = 5)
 ```
 
 ```{r}
@@ -122,13 +115,13 @@ cardio_cells <- gsub("Lange_16hpf_","",(gsub("Lange_24hpf_","",WhichCells(cardio
 ```
 
 ```{r, fig.width=10, fig.height=10}
-p1 <- DimPlot(lat_meso, reduction = "umap", cells.highlight = peri_cells) + NoLegend() + ggtitle("pericardium")
-p2 <- DimPlot(lat_meso, reduction = "umap", cells.highlight = pecfin_cells) + NoLegend() + ggtitle("pectoral fin")
-p3 <- DimPlot(lat_meso, reduction = "umap", cells.highlight = FP_cells) + NoLegend() + ggtitle("floor plate")
-p4 <- DimPlot(lat_meso, reduction = "umap", cells.highlight = parch1_cells) + NoLegend() + ggtitle("pharyngeal arch 1")
-p5 <- DimPlot(lat_meso, reduction = "umap", cells.highlight = parch2_cells) + NoLegend() + ggtitle("pharyngeal arch 2")
-p6 <- DimPlot(lat_meso, reduction = "umap", cells.highlight = cardio_cells) + NoLegend() + ggtitle("myocardium")
-p7 <- DimPlot(lat_meso, group.by = "RNA_snn_res.1", label = T, repel = T) + NoLegend()
+p1 <- DimPlot(lat_meso, reduction = "umap", cells.highlight = peri_cells) + NoLegend() + ggtitle("pericardium cells")
+p2 <- DimPlot(lat_meso, reduction = "umap", cells.highlight = pecfin_cells) + NoLegend() + ggtitle("pectoral fin cells")
+p3 <- DimPlot(lat_meso, reduction = "umap", cells.highlight = FP_cells) + NoLegend() + ggtitle("floor plate cells")
+p4 <- DimPlot(lat_meso, reduction = "umap", cells.highlight = parch1_cells) + NoLegend() + ggtitle("pharyngeal arch 1 cells")
+p5 <- DimPlot(lat_meso, reduction = "umap", cells.highlight = parch2_cells) + NoLegend() + ggtitle("pharyngeal arch 2 cells")
+p6 <- DimPlot(lat_meso, reduction = "umap", cells.highlight = cardio_cells) + NoLegend() + ggtitle("myocardium cells")
+p7 <- DimPlot(lat_meso, group.by = "RNA_snn_res.1", label = T, repel = T) + NoLegend() + ggtitle("Clusters")
 p8 <- DimPlot(lat_meso, group.by = "timepoint")
 p1 + p2 + p3 + p4 + p5 + p6 + p7 + p8
 ```
@@ -168,25 +161,72 @@ lat_meso2$subset_clusters <- Idents(lat_meso2)
 ```
 
 ```{r, fig.width=13, fig.height=10}
-p1 <- DimPlot(lat_meso, reduction = "umap", cells.highlight = peri_cells) + NoLegend() + ggtitle("pericardium")
-p2 <- DimPlot(lat_meso, reduction = "umap", cells.highlight = pecfin_cells) + NoLegend() + ggtitle("pectoral fin")
-p3 <- DimPlot(lat_meso, reduction = "umap", cells.highlight = FP_cells) + NoLegend() + ggtitle("floor plate")
-p4 <- DimPlot(lat_meso, reduction = "umap", cells.highlight = parch1_cells) + NoLegend() + ggtitle("pharyngeal arch 1")
-p5 <- DimPlot(lat_meso, reduction = "umap", cells.highlight = parch2_cells) + NoLegend() + ggtitle("pharyngeal arch 2")
-p6 <- DimPlot(lat_meso, reduction = "umap", cells.highlight = cardio_cells) + NoLegend() + ggtitle("myocardium")
-p7 <- DimPlot(lat_meso, group.by = "RNA_snn_res.1", label = T, repel = T) + NoLegend()
-p8 <- DimPlot(lat_meso, group.by = "timepoint")
-p9 <- DimPlot(lat_meso2, group.by = "subset_clusters")
-p <- p1 + p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9
-p
-ggsave(filename = "results/Lange_lat_meso_subset_UMAP.png", plot = p, width = 13, height = 10)
+p1 <- DimPlot(lat_meso, reduction = "umap", cells.highlight = peri_cells) + NoLegend() + ggtitle("pericardium cells")
+p2 <- DimPlot(lat_meso, reduction = "umap", cells.highlight = pecfin_cells) + NoLegend() + ggtitle("pectoral fin cells")
+p3 <- DimPlot(lat_meso, reduction = "umap", cells.highlight = FP_cells) + NoLegend() + ggtitle("floor plate cells")
+p4 <- DimPlot(lat_meso, reduction = "umap", cells.highlight = parch1_cells) + NoLegend() + ggtitle("pharyngeal arch 1 cells")
+p5 <- DimPlot(lat_meso, reduction = "umap", cells.highlight = parch2_cells) + NoLegend() + ggtitle("pharyngeal arch 2 cells")
+p6 <- DimPlot(lat_meso, reduction = "umap", cells.highlight = cardio_cells) + NoLegend() + ggtitle("myocardium cells")
+p.latmeso.cluster <- DimPlot(lat_meso, group.by = "RNA_snn_res.1", label = T, repel = T) + NoLegend() + ggtitle("Clusters")
+p.latmeso.time <- DimPlot(lat_meso, group.by = "timepoint")# + theme(legend.position = "bottom")
+p.latmeso.sub <- DimPlot(lat_meso2, group.by = "subset_clusters") + ggtitle("Subset Clusters")
+p.latmeso.highlight <- p1 + p2 + p3 + p4 + p5 + p6
+p.latmeso.highlight
+#ggsave(filename = "results/Lange_lat_meso_subset_UMAP.png", plot = p, width = 13, height = 10)
 ```
 
-```{r, fig.width=10, fig.height=5}
-p <- DimPlot(lat_meso2, reduction = "pca", group.by = c("timepoint","subset_clusters")) + scale_color_igv()
-p
-ggsave(filename = "results/Lange_pericardium_subset_pca.png", plot = p, width = 10, height = 5)
+```{r, fig.width=5, fig.height=5}
+p.latmeso.cluster
+p.latmeso.time
+p.latmeso.sub
 ```
+
+```{r, fig.width=5, fig.height=5}
+p.pca.time <- DimPlot(lat_meso2, reduction = "pca", group.by = "timepoint")
+p.pca.time
+#ggsave(filename = "results/Lange_pericardium_subset_pca.png", plot = p, width = 10, height = 5)
+```
+
+```{r, fig.width=5, fig.height=5}
+p.pca.sub <- DimPlot(lat_meso2, reduction = "pca", group.by = "subset_clusters") + ggtitle("Subset Clusters")
+p.pca.sub
+#ggsave(filename = "results/Lange_pericardium_subset_pca.png", plot = p, width = 10, height = 5)
+```
+
+```{r combined, fig.width=15, fig.height=20}
+layout <- "
+  AAAABBBB
+  CCCCCCCC
+  CCCCCCCC
+  DDDEEFFF
+  GGGGHHHH
+  "
+#t,l,b,r
+# layout <- c(
+#   area(1,1,1,3),
+#   area(1,4,1,6),
+#   area(2,1,3,6),
+#   area(4,1,4,3),
+#   area(4,3,4,4),
+#   area(4,5,4,6),
+#   area(5,1,5,3),
+#   area(5,4,5,6)
+# )
+  
+  
+combined1 <- p.umap.full + p.peri.full + 
+  p.latmeso.highlight + 
+  p.latmeso.cluster + free(p.latmeso.time) + p.latmeso.sub +
+  p.pca.time + p.pca.sub +
+  plot_layout(design = layout) + plot_annotation(tag_levels = list(c("A","B","C","","","","","","D","E","F","G","H")))
+combined1
+ggsave(filename = "results/Supp_Lange_subset.png", width = 15, height = 20, plot = combined1)
+```
+```{r}
+scales::show_col(scales::hue_pal()(5))
+show(scales::hue_pal()(5))
+```
+
 
 # slingshot
 
@@ -210,9 +250,13 @@ crv@colData@listData[["slingshot"]]@metadata[["lineages"]][["Lineage1"]]
 crv@colData@listData[["slingshot"]]@metadata[["lineages"]][["Lineage2"]]
 ```
 
+plotGeneCount puts clusters in alphabetical order in legend (and palette order) despite levels of ident being the order as in Seurat object, so need to set color palette manually to match DimPlot.
 
+"#F8766D" "#A3A500" "#00BF7D" "#00B0F6" "#E76BF3"
+"Undifferentiated LPM (10/12 hpf)" "Undifferentiated LPM (12/14 hpf)" "LPM (16/19 hpf)"                  "Pericardium (24 hpf)" "Myocardium (16/19/24 hpf)"
 ```{r}
-p <- plotGeneCount(crv, clusters = colData(sce)$subset_clusters) + scale_color_manual(values = cbpal18)
+p <- plotGeneCount(crv, clusters = colData(sce)$subset_clusters) + 
+  scale_color_manual(values = c("#00BF7D","#E76BF3","#00B0F6","#F8766D","#A3A500"))
 p
 ggsave(filename = "results/Lange_slingshot.png")
 ```
