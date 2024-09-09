@@ -55,6 +55,11 @@ ggsave(filename = "results/hand2_bud_umap_vs2.png", plot = p, width = 7, height 
 ```
 
 ```{r}
+Idents(seurat) <- "sub.cluster"
+DimPlot(seurat, cols = cbpal18)
+```
+
+```{r}
 genelist <- c("tcf21", "sema3aa", "wt1a", "meis3", "adra1d", "kank1a",
               "jam2b", "sfrp5", "tmem88b", "nr2f1a", "meis2b", "twist1a",
               "tbx20", "mef2ca", "hey2", "actn2b","ttn.2", "nkx2.5")
@@ -64,6 +69,29 @@ genelist <- c("tcf21", "sema3aa", "wt1a", "meis3", "adra1d", "kank1a",
 p <- DotPlot(seurat, features = genelist, idents = c("pericardium","myocardium","mesothelium")) + RotatedAxis()
 p
 ggsave(filename = "results/dotplot.png", plot = p, width = 7, height = 3, units = "in")
+```
+
+
+```{r, fig.width=15, fig.height=10}
+p <- FeaturePlot(seurat, features = genelist, keep.scale = "all", max.cutoff = 1.7, combine = F)
+p <- wrap_plots(p, guides = "collect", ncol = 6) & theme(axis.title = element_text(size = 8), 
+                                               axis.text = element_blank(),
+                                               axis.ticks = element_blank())
+p
+ggsave(filename = "results/featurePlot_list1.png", plot = p, width = 15, height = 10, units = "in")
+```
+
+```{r}
+genelist2 <- c("tmem88b", "sfrp5", "dhrs3a", "fzd7a", "tcf21", "fzd4", "fzd9b", "dact1", "dact3a", "tcf12")
+```
+
+```{r, fig.width=10, fig.height=5}
+p <- FeaturePlot(seurat, features = genelist2, keep.scale = "all", max.cutoff = 1.7, combine = F)
+p <- wrap_plots(p, guides = "collect", ncol = 5) & theme(axis.title = element_text(size = 8), 
+                                               axis.text = element_blank(),
+                                               axis.ticks = element_blank())
+p
+ggsave(filename = "results/featurePlot_list2.png", plot = p, width = 10, height = 5, units = "in")
 ```
 
 saving cluster name changes -- this means notebook can't be run again without first rerunning Process_hand2.bud.Rmd
